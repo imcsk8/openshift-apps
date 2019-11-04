@@ -13,7 +13,7 @@ import (
 
 // Global variables
 
-var username, password, database string
+var username, password, database, host string
 var DB *sql.DB
 
 type User struct {
@@ -26,7 +26,8 @@ func main() {
 	username, _ = os.LookupEnv("MYSQL_USER")
 	password, _ = os.LookupEnv("MYSQL_PASSWORD")
 	database, _ = os.LookupEnv("MYSQL_DATABASE")
-	DB = db_connect(username, password, database)
+	host, _ = os.LookupEnv("MYSQL_HOST")
+	DB = db_connect(username, password, database, host)
 	defer DB.Close()
 	Setup()
 
@@ -69,18 +70,20 @@ func EnvHandler(w http.ResponseWriter, r *http.Request) {
 		MYSQL_USER     string
 		MYSQL_PASSWORD string
 		MYSQL_DATABASE string
+		MYSQL_HOST     string
 		Users          []User
 	}{
 		username,
 		password,
 		database,
+		host,
 		nil,
 	}
 	err := tmpl.Execute(w, data)
 	if err != nil {
 		log.Printf("Error while executing template: %s", err)
 	}
-	log.Printf("Database Setup Variables:\nMYSQL_USER: %s\nMYSQL_PASSWORD: %s\nMYSQL_DATABASE: %s\n", username, password, database)
+	log.Printf("Database Setup Variables:\nMYSQL_USER: %s\nMYSQL_PASSWORD: %s\nMYSQL_DATABASE: %s\nMYSQL_HOST: %s\n", username, password, database, host)
 
 }
 
@@ -123,8 +126,8 @@ func db_create_schema() {
 	crt.Close()
 }
 
-func db_connect(username string, password string, database string) *sql.DB {
-	connstring := username + ":" + password + "@/" + database
+func db_connect(username string, password string, database string, host string) *sql.DB {
+	connstring := username + ":" + password + "@tcp(" + host + ":3306)/" + database
 	log.Print("Connecting to the database: " + connstring)
 	db, err := sql.Open("mysql", connstring)
 	if err != nil {
