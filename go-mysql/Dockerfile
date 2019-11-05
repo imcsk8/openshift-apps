@@ -1,4 +1,5 @@
 FROM golang:1.12
+LABEL maintainer="ichavero@chavero.com.mx"
 
 RUN mkdir -p /go/src/github.com/openshift/go-mysql
 WORKDIR /go/src/github.com/openshift/go-mysql
